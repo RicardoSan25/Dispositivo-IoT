@@ -1,0 +1,130 @@
+# Librerias
+import json
+from datetime import datetime
+import pytz
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib import font_manager
+from matplotlib.dates import DateFormatter, HourLocator
+import pytz
+
+# Cargar los datos de los archivos JSON
+with open('Datos-C1.json', 'r') as f1, open('Datos-C2.json', 'r') as f2:
+    data1 = json.load(f1)
+    data2 = json.load(f2)
+
+# Definir la zona horaria local
+local_tz = pytz.timezone('America/Lima')  # GMT-05:00
+
+# Procesar datos del sensor 1 (temperatura y humedad)
+sensor1_tem_data = data1['tem']
+sensor1_tem_times = [datetime.fromtimestamp(item['ts'] / 1000) for item in sensor1_tem_data]
+sensor1_tem_values = [float(item['value']) for item in sensor1_tem_data]
+
+sensor1_hum_data = data1['hum']
+sensor1_hum_times = [datetime.fromtimestamp(item['ts'] / 1000) for item in sensor1_hum_data]
+sensor1_hum_values = [float(item['value']) for item in sensor1_hum_data]
+
+# Procesar datos del sensor 2 (temperatura y humedad)
+sensor2_tem_data = data2['tem']
+sensor2_tem_times = [datetime.fromtimestamp(item['ts'] / 1000) for item in sensor2_tem_data]
+sensor2_tem_values = [float(item['value']) for item in sensor2_tem_data]
+
+sensor2_hum_data = data2['hum']
+sensor2_hum_times = [datetime.fromtimestamp(item['ts'] / 1000) for item in sensor2_hum_data]
+sensor2_hum_values = [float(item['value']) for item in sensor2_hum_data]
+
+# Crear DataFrames de pandas para ambos sensores (temperatura y humedad)
+df_sensor1_tem = pd.DataFrame({'time': sensor1_tem_times, 'temperature_sensor1': sensor1_tem_values})
+df_sensor1_hum = pd.DataFrame({'time': sensor1_hum_times, 'humidity_sensor1': sensor1_hum_values})
+
+df_sensor2_tem = pd.DataFrame({'time': sensor2_tem_times, 'temperature_sensor2': sensor2_tem_values})
+df_sensor2_hum = pd.DataFrame({'time': sensor2_hum_times, 'humidity_sensor2': sensor2_hum_values})
+
+# Unir los DataFrames en uno solo basado en el tiempo
+df_tem = pd.merge_asof(df_sensor1_tem.sort_values('time'), df_sensor2_tem.sort_values('time'), on='time')
+df_hum = pd.merge_asof(df_sensor1_hum.sort_values('time'), df_sensor2_hum.sort_values('time'), on='time')
+
+# Establecer la columna de tiempo como índice
+df_tem.set_index('time', inplace=True)
+df_hum.set_index('time', inplace=True)
+
+# Configurar el fondo blanco
+fig, ax1 = plt.subplots(figsize=(16, 9))
+fig.patch.set_facecolor('white')
+ax1.set_facecolor('white')
+
+# Verificar si Arial está disponible, si no usar una fuente genérica
+font_family = 'Arial' if 'Arial' in [f.name for f in font_manager.fontManager.ttflist] else 'sans-serif'
+
+# Configurar el segundo eje Y (humedad)
+ax2 = ax1.twinx()
+ax2.set_ylabel('Humedad (%)', fontsize=18, fontweight='bold', fontname=font_family, labelpad=20)
+ax2.plot(df_hum.index, df_hum['humidity_sensor1'],  color='tab:red', label='Dispositivo C1 - Hum')
+ax2.plot(df_hum.index, df_hum['humidity_sensor2'], color='tab:blue', label='Dispositivo C2 - Hum')
+ax2.tick_params(axis='y', labelsize=16, labelcolor='black') #esto agregue
+
+
+# Configurar el primer eje Y (temperatura)
+ax1.set_xlabel('Tiempo (Mayo del 2024)', fontsize=18, fontweight='bold', fontname=font_family, labelpad=20)
+ax1.set_ylabel('Temperatura (°C)', fontsize=18, fontweight='bold', fontname=font_family, labelpad=20)
+ax1.plot(df_tem.index, df_tem['temperature_sensor1'], linestyle='--', color='tab:red', label='Dispositivo C1 - Temp')
+ax1.plot(df_tem.index, df_tem['temperature_sensor2'], linestyle='--',color='tab:blue', label='Dispositivo C2 - Temp')
+ax1.tick_params(axis='y', labelsize=16, labelcolor='black') #esto agregue
+
+
+
+# Añadir etiquetas adicionales
+#ax1.set_title('Temperatura y Humedad de Dispositivos', fontsize=16, fontname=font_family, pad=20)
+
+# Personalizar el marco
+for spine in ax1.spines.values():
+    spine.set_edgecolor('black')
+    spine.set_linewidth(1)
+
+# Personalizar la cuadrícula
+ax1.grid(True, color='gray', linestyle='-', linewidth=0.75)
+
+# Ajustar los límites del eje Y para una mejor visualización
+ax1.set_ylim(min(df_tem['temperature_sensor1'].min(), df_tem['temperature_sensor2'].min()) - 1,
+             max(df_tem['temperature_sensor1'].max(), df_tem['temperature_sensor2'].max()) + 8)
+ax2.set_ylim(min(df_hum['humidity_sensor1'].min(), df_hum['humidity_sensor2'].min()) - 18,
+             max(df_hum['humidity_sensor1'].max(), df_hum['humidity_sensor2'].max()) + 8)
+
+# Especificar los límites de tiempo que deseas mostrar
+inicio = local_tz.localize(datetime(2024, 5, 28, 10, 40, 0))  # 28 de mayo de 2024, 9AM hora local
+fin = local_tz.localize(datetime(2024, 5, 29, 8, 0, 0))  # 31 de mayo de 2024, 2PM hora local
+#inicio = local_tz.localize(datetime(2024, 5, 28, 11, 0, 0))  # 28 de mayo de 2024, 9AM hora local
+#fin = local_tz.localize(datetime(2024, 5, 31, 13, 0, 0))  # 31 de mayo de 2024, 2PM hora local
+
+# Ajustar los límites del eje X
+ax1.set_xlim(inicio, fin)
+
+# Configurar los intervalos del eje X cada seis horas
+#ax1.xaxis.set_major_locator(HourLocator(interval=12))
+#ax1.xaxis.grid(True, which='major', color='gray', linestyle='-', linewidth=0.75) #Esto agreggue
+
+#esto se agrego
+# Ajustar los intervalos de la grilla del eje X cada 12 horas
+ax1.xaxis.set_minor_locator(HourLocator(interval=2))
+ax1.xaxis.grid(True, which='minor', color='gray', linestyle='-', linewidth=0.5)
+
+# Ajustar las etiquetas del eje X cada 24 horas
+ax1.xaxis.set_major_locator(HourLocator(interval=6))
+ax1.xaxis.grid(True, which='major', color='gray', linestyle='-', linewidth=0.75)
+
+
+date_format = DateFormatter('%d; %H:%M', tz=local_tz)
+ax1.xaxis.set_major_formatter(date_format)
+ax2.xaxis.set_major_formatter(date_format)
+ax1.tick_params(axis='x', labelsize=16, labelcolor='black') #esto agregue
+
+# Añadir la leyenda
+lines, labels = ax1.get_legend_handles_labels()
+lines2, labels2 = ax2.get_legend_handles_labels()
+ax2.legend(lines + lines2, labels + labels2, loc='best',prop={'size': 16}) #esto agregue
+
+plt.tight_layout()
+# Para Descargar la imagen en pdf
+plt.savefig('tem_hum_C1-C2-res2.pdf', format='pdf', bbox_inches='tight')
+plt.show()

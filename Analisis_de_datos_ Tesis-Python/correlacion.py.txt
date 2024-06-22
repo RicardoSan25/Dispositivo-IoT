@@ -1,0 +1,71 @@
+#Librerias
+import json
+from datetime import datetime
+import pytz
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib import font_manager
+from matplotlib.dates import DateFormatter, HourLocator
+import pytz
+
+# Leer datos desde los archivos JSON
+with open('C1-2DIS.json', 'r') as f1, open('C2-2DIS.json', 'r') as f2:
+    data1 = json.load(f1)
+    data2 = json.load(f2)
+
+# Procesar datos del sensor 1
+sensor1_data = data1['tem1']
+sensor1_times = [datetime.fromtimestamp(item['ts'] / 1000) for item in sensor1_data]
+sensor1_values = [float(item['value']) for item in sensor1_data]
+
+# Procesar datos del sensor 2
+sensor2_data = data2['tem']
+sensor2_times = [datetime.fromtimestamp(item['ts'] / 1000) for item in sensor2_data]
+sensor2_values = [float(item['value']) for item in sensor2_data]
+
+# Crear DataFrames de pandas para ambos sensores
+df_sensor1 = pd.DataFrame({'time': sensor1_times, 'temperature_sensor1': sensor1_values})
+df_sensor2 = pd.DataFrame({'time': sensor2_times, 'temperature_sensor2': sensor2_values})
+
+# Unir los DataFrames en uno solo basado en el tiempo
+df = pd.merge_asof(df_sensor1.sort_values('time'), df_sensor2.sort_values('time'), on='time')
+
+# Establecer la columna de tiempo como índice
+df.set_index('time', inplace=True)
+
+# Reamplear los datos a intervalos de dos horas (opcional)
+#df_resampled = df.resample('10T').mean()
+
+# Calcular la correlación de Pearson
+correlation = df.corr().iloc[0, 1]
+print(f"Correlación de Pearson: {correlation:.3f}")
+
+# Configurar el gráfico
+plt.figure(figsize=(10, 6))
+sns.set(style="whitegrid")
+
+# Crear gráfico de dispersión con línea de regresión
+scatter_plot = sns.regplot(x='temperature_sensor1', y='temperature_sensor2', data=df, scatter_kws={'s':10}, line_kws={'color':'red'})
+
+# Personalizar la cuadrícula
+plt.grid(True, color='gray', linestyle='-', linewidth=0.5)
+
+# Personalizar el marco del gráfico
+for spine in plt.gca().spines.values():
+    spine.set_edgecolor('black')  # Color del marco
+    spine.set_linewidth(1)        # Grosor del marco
+
+# Añadir la correlación en la gráfica con marca de agua
+plt.text(0.05, 0.9, f'Correlación de Pearson: {correlation:.3f}', fontsize=10, fontweight='bold',
+         bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.5'), transform=plt.gca().transAxes)
+
+# Configurar las etiquetas y el título
+plt.xlabel('Dispositivo 1 - Temperatura (°C)', fontweight='bold')
+plt.ylabel('Dispositivo 2 - Temperatura (°C)', fontweight='bold')
+##plt.title('Gráfico de Dispersión y Regresión de Temperatura entre Sensor 1 y Sensor 2')
+
+# Guardar la gráfica en formato PDF
+plt.savefig('correla_plot_tem.pdf', format='pdf', bbox_inches='tight')
+
+# Mostrar la gráfica
+plt.show()
