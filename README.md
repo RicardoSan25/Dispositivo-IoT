@@ -19,6 +19,7 @@ Toda esta información se envía en formato JSON.
 El proceso de ejecución del programa es el siguiente:
 1. Conexión a la red WiFi
 2. Sincronización con el servidor NTP "ec.pool.ntp.org"
-3. Envío de una cantidad de paquetes con su respectivo identificador
+3. Envío de una cantidad de paquetes con su respectivo identificador al servidor de Thingsboard
 
 ## 3. V2-Tesis
+Esta carpeta contiene toda la programación de nuestro dispositivo IoT. Se han utilizado técnicas de programación avanzadas para optimizar el código y mejorar la eficiencia energética del dispositivo.
