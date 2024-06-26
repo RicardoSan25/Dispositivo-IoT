@@ -23,5 +23,12 @@ El proceso de ejecución del programa es el siguiente:
 
 ## 3. V2-Tesis
 Esta carpeta contiene toda la programación de nuestro dispositivo IoT. Se han utilizado técnicas de programación avanzadas para optimizar el código y mejorar la eficiencia energética del dispositivo.
+<figure>
+  <img src="Diagrama de Flujo-Dispositivo IoT.png" alt="Diagrama de Flujo del Dispositivo IoT">
+  <figcaption>Figura 1: Diagrama de Flujo del Dispositivo IoT</figcaption>
+</figure>
 
-<img src="Diagrama de Flujo-Dispositivo IoT.png" alt="Diagrama de Flujo del Dispositivo IoT">
+<figure>
+  <img src="Diagrama de flujo-Lectura sensores.png" alt="Diagrama de Flujo de lectura de los sensores">
+  <figcaption>Figura 2: Diagrama de Flujo de lectura de los sensores</figcaption>
+</figure>
