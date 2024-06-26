@@ -10,9 +10,9 @@ de Thingsboard usando el protocolo HTTPS cada 5 minutos. Para terminos de mejora
 
   
   Cada paquete enviado contiene la siguiente información:
-*Identificador
-*Potencia de la red WiFi
-*Epoch timeen milisegundos
+* Identificador
+* Potencia de la red WiFi
+* Epoch timeen milisegundos
 Toda esta información se envía en formato JSON.
 
 ## 3. V2-Tesis
