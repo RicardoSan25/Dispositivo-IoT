@@ -15,4 +15,10 @@ de Thingsboard usando el protocolo HTTPS cada 5 minutos. Para terminos de mejora
 * Epoch timeen milisegundos
 Toda esta información se envía en formato JSON.
 
+
+El proceso de ejecución del programa es el siguiente:
+1. Conexión a la red WiFi
+2. Sincronización con el servidor NTP "ec.pool.ntp.org"
+3. Envío de una cantidad de paquetes con su respectivo identificador
+
 ## 3. V2-Tesis
